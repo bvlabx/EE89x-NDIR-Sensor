@@ -1,7 +1,7 @@
 /**
  * EE89x Library
  *
- * Copyright 2017 Borislav Lazarov <bv.lazarov@gmail.com>
+ * 2017 Borislav Lazarov <bv.lazarov@gmail.com>
  * Based on the code provided from the manifacture:
  * http://downloads.epluse.com/fileadmin/data/sw/Specification_E2_Interface.pdf
  * and examples provided by http://blueberrye.io
