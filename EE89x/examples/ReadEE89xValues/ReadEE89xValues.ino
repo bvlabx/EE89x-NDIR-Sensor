@@ -4,7 +4,7 @@
  * Read CO2 concentration values from an EE89x-series (EE892 and EE893)
  * CO2 sensor modules from E+E Electronik  (www.epluse.com)
  *
- * Copyright 2017 Borislav Lazarov <bv.lazarov@gmail.com>
+ * 2017 Borislav Lazarov <bv.lazarov@gmail.com>
  */
 
 #include <EE89x.h>
