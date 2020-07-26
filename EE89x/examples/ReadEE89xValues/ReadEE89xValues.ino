@@ -27,17 +27,24 @@ void setup()
 }
 
 void loop() {
-  int co2_raw;
+  float temp; 
+  float hum;
+  float press;
   int co2_average;
 
   // Read values from the sensor
-  co2_raw = ee89x.readCO2raw(); //read the raw CO2 value from the sensor
+  temp = ee89x.readTemperature(); //read the temperature value from the sensor
+  hum = ee89x.readHumidity(); //read the Relative Humidity value from the sensor
+  press = ee89x.readPressure(); //read the Ambient Pressure value from the sensor
   co2_average = ee89x.readCO2average(); //read the average CO2 value from at least 11 single masurements
 
   // Print the values to the serial port
-  Serial.print("Raw CO2 concentration: ");
-  Serial.print(co2_raw, DEC);
-  Serial.print(" ppm / Average CO2 concentration: ");
+  Serial.print("Temperature: ");
+  Serial.print(temp, 1);
+  Serial.print(" °C / Humidity: ");
+  Serial.print(hum, 1);
+  Serial.print(" % / Atm. Pressure: ");
+  Serial.print(" mbar / CO2 concentration: ");
   Serial.print(co2_average, DEC);
   Serial.println(" ppm");
   delay(20000); //the min measurement interval of the sensor is 15s

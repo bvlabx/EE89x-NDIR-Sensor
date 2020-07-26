@@ -1,23 +1,17 @@
 /**
  * EE89x Library
  *
- * 2017 Borislav Lazarov <bv.lazarov@gmail.com>
+ * Copyright 2020 Borislav Lazarov <bv.lazarov@gmail.com>
  * Based on the code provided from the manifacture:
- * http://downloads.epluse.com/fileadmin/data/sw/Specification_E2_Interface.pdf
- * and examples provided by http://blueberrye.io
+ *     http://downloads.epluse.com/fileadmin/data/sw/Specification_E2_Interface.pdf
  *
- * Manages communication with EE892 and EE893 NDIR CO2 sensor module
- * from E+E Electronik  (www.epluse.com/EE893).
+ * Manages communication with EE893 and EE894 NDIR CO2 sensor module
+ * from E+E Electronik  (www.epluse.com/EE894).
  */
-
  #ifndef EE89x_h
  #define EE89x_h
-
- #if (ARDUINO >= 100)
- #include "Arduino.h"
- #else
- #include "WProgram.h"
- #endif
+ 
+ 
 
  class EE89x
  {
@@ -25,8 +19,11 @@
      EE89x (int dataPin, int clockPin);
      int readSensortype();
      unsigned char readSensorparameters();
-     int readCO2raw();
-     int readCO2average();
+	   unsigned char readStatusbyte();
+     float readCO2average();
+     float readHumidity();
+     float readTemperature();
+     float readPressure();
 
    private:
      int _dataPin;

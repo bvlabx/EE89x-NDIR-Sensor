@@ -1,13 +1,12 @@
 /**
  * EE89x Library
  *
- * 2017 Borislav Lazarov <bv.lazarov@gmail.com>
+ * Copyright 2020 Borislav Lazarov <bv.lazarov@gmail.com>
  * Based on the code provided from the manifacture:
- * http://downloads.epluse.com/fileadmin/data/sw/Specification_E2_Interface.pdf
- * and examples provided by http://blueberrye.io
- * 
- * Manages communication with EE892 and EE893 NDIR CO2 sensor module
- * from E+E Electronik  (www.epluse.com/EE893).
+ *     http://downloads.epluse.com/fileadmin/data/sw/Specification_E2_Interface.pdf
+ *
+ * Manages communication with EE893 and EE894 NDIR CO2 sensor module
+ * from E+E Electronik  (www.epluse.com/EE894).
  */
 
  #include "Arduino.h"
@@ -19,8 +18,13 @@
  #define _gSensorType_LBCmd 0x11
  #define _gSensorType_HBCmd 0x41
  #define _gSensorParameters_Cmd 0x31
- #define _gCO2raw_LBCmd 0xC1
- #define _gCO2raw_HBCmd 0xD1
+ #define _gStatusByte_Cmd 0x71
+ #define _gHumidity_LBCmd 0x81
+ #define _gHumidity_HBCmd 0x91
+ #define _gTemperature_LBCmd 0xA1
+ #define _gTemperature_HBCmd 0xB1
+ #define _gPressure_LBCmd 0xC1
+ #define _gPressure_HBCmd 0xD1
  #define _gCO2average_LBCmd 0xE1
  #define _gCO2average_HBCmd 0xF1
 
@@ -73,41 +77,126 @@
      }
    return (_sensorParameters);
  }
-
+ 
  /**
-  * Reads the current CO2 value (fast response). This measurement has fast response and
-  * low accuracy level.
+  * Reads the measurement status byte. Reading the status byte starts a new measurement (whithin the slave)
+  * The status byte provides information about the validity of the last measurement
   */
- int EE89x::readCO2raw()
+ 
+ unsigned char EE89x::readStatusbyte()
  {
-   int _co2raw;
-   unsigned char _co2_LB;
-   unsigned char _co2_HB;
+   unsigned char _statusByte;
 
-
-   _co2_LB = readAByte(_gCO2raw_LBCmd, _dataPin, _clockPin);
-   _co2_HB = readAByte(_gCO2raw_HBCmd, _dataPin, _clockPin);
-
-   _co2raw = (_co2_HB*256)+_co2_LB;
-
-   return (_co2raw);
+    _statusByte = readAByte(_gStatusByte_Cmd, _dataPin, _clockPin);
+   
+   return (_statusByte);
  }
 
  /**
   * Reads the average CO2 value from at least 11 measurements (slow response)
   */
- int EE89x::readCO2average()
+ float EE89x::readCO2average()
  {
-   int _co2average;
+   float _co2average;
    unsigned char _co2_LB;
    unsigned char _co2_HB;
+   unsigned char _status;
+
+   _co2average = -1;
 
    _co2_LB = readAByte(_gCO2average_LBCmd, _dataPin, _clockPin);
+   _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+   if (_status == 0)
+   {
    _co2_HB = readAByte(_gCO2average_HBCmd, _dataPin, _clockPin);
-
-   _co2average = (_co2_HB*256)+_co2_LB;
+   _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+    if (_status == 0) {
+      _co2average = (_co2_HB*256)+_co2_LB;
+    }
+   }
 
    return (_co2average);
+ }
+
+ /**
+  * Reads the current Relative Humidity value (only for EE894).
+  */
+ float EE89x::readHumidity()
+ {
+   float _humidity;
+   unsigned char _humidity_LB;
+   unsigned char _humidity_HB;
+   unsigned char _status;
+
+   _humidity = -1;
+   
+   _humidity_LB = readAByte(_gHumidity_LBCmd, _dataPin, _clockPin);
+   _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+   if (_status == 0)
+   {
+    _humidity_HB = readAByte(_gHumidity_HBCmd, _dataPin, _clockPin);
+    _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+    if(_status == 0)
+    {  
+      _humidity = ((_humidity_HB*256)+_humidity_LB)/100.0;
+    }
+   }
+      
+   return (_humidity);
+ }
+
+ /**
+  * Reads the current Temperature value (only for EE894).
+  */
+ float EE89x::readTemperature()
+ {
+   float _temperature;
+   unsigned char _temperature_LB;
+   unsigned char _temperature_HB;
+   unsigned char _status;
+
+   _temperature = -300;
+   
+   _temperature_LB = readAByte(_gTemperature_LBCmd, _dataPin, _clockPin);
+   _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+   if (_status == 0)
+   {
+    _temperature_HB = readAByte(_gTemperature_HBCmd, _dataPin, _clockPin);
+    _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+    if(_status == 0)
+    {   
+      _temperature = ((_temperature_HB*256)+_temperature_LB)/100.0 - 273.15;
+    }
+   }
+
+   return (_temperature);
+ }
+
+ /**
+  * Reads the current Ambient pressure value (only for EE894).
+  */
+ float EE89x::readPressure()
+ {
+   float _pressure;
+   unsigned char _pressure_LB;
+   unsigned char _pressure_HB;
+   unsigned char _status;
+
+   _pressure = -1;
+   
+   _pressure_LB = readAByte(_gPressure_LBCmd, _dataPin, _clockPin);
+   _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+   if (_status == 0)
+   {
+    _pressure_HB = readAByte(_gPressure_HBCmd, _dataPin, _clockPin);
+    _status = readAByte (_gStatusByte_Cmd, _dataPin, _clockPin);
+    if(_status == 0)
+    {     
+      _pressure = ((_pressure_HB*256)+_pressure_LB)/10.0;
+    }
+   }
+
+   return (_pressure);
  }
 
  /* ================  Private methods ================ */
@@ -118,7 +207,7 @@
    unsigned char _valueByte;
    unsigned char _checkSumByte;
    int _statusByte = 1;
-   int _ntrysByte = 1;
+   int _ntrysByte = 0;
 
    while (_statusByte && _ntrysByte < 3)
    {
